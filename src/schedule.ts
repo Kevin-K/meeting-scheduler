@@ -120,7 +120,7 @@ export class Scheduler {
     while (nextAvailabeTime <= latestMeetingPossible) {
       let found = true;
 
-      // look at the next meeting for each attendee
+      // loop through each attendee
       // if the attendee can't make the current time in test, move
       // the reference point to their next free slot (if further in the
       // future than time in test)

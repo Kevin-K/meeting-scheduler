@@ -21,8 +21,8 @@ ex: `npm start -- ./schedule.txt`
 ```
 <length of meeting>
 # Then as many of the following
-<Array of meeting time touples for individual>
-<Work day touple for individual>
+<Array of meeting time tuples for individual>
+<Work day tuple for individual>
 ```
 
 Ex:

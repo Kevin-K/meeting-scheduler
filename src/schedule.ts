@@ -106,7 +106,6 @@ export class Scheduler {
     // Determine the min/max meeting bounds given the attendees' work day.
     const dayBound = Scheduler.getBounds(attendees);
 
-    console.log(`from: ${dayBound.start_tp.time} to: ${dayBound.end_tp.time}`);
     // Look to schedule starting at the min work day bound, and end at the end
     // work day bound less the meeting time.
     let nextAvailabeTime = dayBound.start;

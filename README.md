@@ -66,7 +66,6 @@ Person #5:
 Person #6:
         Work Day:       8:00 - 12:00
         Calendar:       10:00 - 10:30, 11:15 - 12:45
-from: 480 to: 720
 ---------------------------------------------------------------
 Meeting Schedule Results:
         Meeting Length: 30

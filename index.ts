@@ -24,11 +24,7 @@ if (schedule) {
   schedule.attendees.forEach((a, i) => {
     console.log(`Person #${i}:`);
     console.log(`\tWork Day:\t${a.workDay}`);
-    console.log(
-      `\tCalendar:\t${a.meetings
-        .map((m) => `${m.start_tp.time} - ${m.end_tp.time}`)
-        .join(", ")}`
-    );
+    console.log(`\tCalendar:\t${a.meetings.join(", ")}`);
   });
 
   const results = schedule.run();

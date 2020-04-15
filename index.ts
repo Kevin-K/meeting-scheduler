@@ -33,5 +33,5 @@ if (schedule) {
   );
   console.log("Meeting Schedule Results:");
   console.log(`\tMeeting Length:\t${schedule.meetingLength}`);
-  console.log(`\tTime Slots:\t${results.join(", ")}`);
+  console.log(`\tTime Blocks:\t${results.join(", ")}`);
 }

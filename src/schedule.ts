@@ -1,7 +1,7 @@
 import inputFileToArray from "./inputFileToArray";
 import Person from "./Person";
 import TimeBlock from "./TimeBlock";
-import { cloneDeep } from "lodash";
+import { Heap } from "heap-js";
 export type ScheduleData = {
   meetingLength: number;
   attendees: Array<Person>;
@@ -21,7 +21,6 @@ export type ScheduleData = {
 export class Scheduler {
   meetingLength: number;
   attendees: Array<Person>;
-  schedulingInterval: number = 15;
 
   constructor(filePath: string) {
     const { meetingLength, attendees } = Scheduler.loadScheduleData(filePath);
@@ -33,11 +32,7 @@ export class Scheduler {
    * Get the list of possible meeting times
    */
   run() {
-    return Scheduler.schedule(
-      this.meetingLength,
-      this.attendees,
-      this.schedulingInterval
-    );
+    return Scheduler.schedule(this.meetingLength, this.attendees);
   }
 
   /**
@@ -92,65 +87,45 @@ export class Scheduler {
   /**
    * Given a meeting length and a list of attendees,
    * find all possible meeting times during the work day.
-   * The suggestionInterval puts a N minute gap between each suggestion. Default 15 minutes.
    * @param meetingLength how long the meeting is in minutes
    * @param attendees list of people attending
-   * @param suggestionInterval how many minutes apart to make suggestions.
+   * @returns blocks of time which the meeting can occur during
    */
   static schedule(
     meetingLength: number,
-    attendees: Array<Person>,
-    suggestionInterval = 15
+    attendees: Array<Person>
   ): Array<TimeBlock> {
-    const availMeetings = [];
-    // Determine the min/max meeting bounds given the attendees' work day.
+    const availMeetings: Array<TimeBlock> = [];
+
+    // store all meetings in a heap;
+    const meetings = new Heap<TimeBlock>(TimeBlock.startSort);
+
+    // O(n) Determine the min/max meeting bounds given the attendees' work day.
     const dayBound = Scheduler.getBounds(attendees);
 
-    // Look to schedule starting at the min work day bound, and end at the end
-    // work day bound less the meeting time.
-    let nextAvailabeTime = dayBound.start;
-    const latestMeetingPossible = dayBound.end - meetingLength;
+    meetings.add(new TimeBlock("00:00", dayBound.start));
+    meetings.add(new TimeBlock(dayBound.end, "24:00"));
 
-    // get a working set of attendees (cloned meeting schedules since JS
-    // is passing a reference)
-    const attendeeData = attendees.map(cloneDeep);
+    // O(nlog n) Each attendee loop through their meetings and place on heap
+    attendees.forEach((a) => a.meetings.forEach((m) => meetings.add(m)));
+    let meeting;
+    while ((meeting = meetings.pop())) {
+      const nextMeeting = meetings.peek();
+      if (!nextMeeting) {
+        break;
+      }
 
-    // loop through until the last possible meeting.
-    while (nextAvailabeTime <= latestMeetingPossible) {
-      let found = true;
-
-      // loop through each attendee
-      // if the attendee can't make the current time in test, move
-      // the reference point to their next free slot (if further in the
-      // future than time in test)
-      attendeeData.forEach((attendee, i) => {
-        let meeting;
-
-        // fast foward through the attendee's schedule until
-        // the next meeting after the time point in reference
-        do {
-          meeting = attendee.meetings.shift();
-        } while (meeting && meeting.start < nextAvailabeTime);
-        if (!meeting) return;
-
-        // if the meeting won't fit before this attendee's next meeting,
-        // then move to looking at after their meeting.
-        if (nextAvailabeTime + meetingLength > meeting.start) {
-          nextAvailabeTime = meeting.end;
-          found = false;
+      // if there is overlap, fuse with the next meeting
+      if (meeting.end >= nextMeeting.start) {
+        nextMeeting.start = meeting.start;
+      } else {
+        // else there is an opening between now and the next meeting
+        // determine if we can schedule there
+        if (nextMeeting.start - meeting.end > meetingLength) {
+          availMeetings.push(new TimeBlock(meeting.end, nextMeeting.start));
         }
-      });
-
-      // If a meeting time was found, add it to the list and bump to the next
-      // suggested interval.
-      if (found) {
-        availMeetings.push(
-          new TimeBlock(nextAvailabeTime, nextAvailabeTime + meetingLength)
-        );
-        nextAvailabeTime = nextAvailabeTime + suggestionInterval;
       }
     }
-
     return availMeetings;
   }
 }

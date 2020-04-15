@@ -21,10 +21,41 @@ export default class TimeBlock {
   get start() {
     return this.start_tp.time;
   }
+  set start(time) {
+    this.start_tp.time = time;
+  }
+
   get end() {
     return this.end_tp.time;
   }
+
+  set end(time) {
+    this.end_tp.time = time;
+  }
+
   toString(): string {
     return `${this.start_tp.toString()} - ${this.end_tp.toString()}`;
+  }
+
+  static startSort(a: TimeBlock, b: TimeBlock) {
+    if (a && !b) {
+      return -1;
+    } else if (!a && b) {
+      return 1;
+    } else if (!b && !a) {
+      return 0;
+    }
+
+    if (a.start < b.start) {
+      return -1;
+    } else if (a.start > b.start) {
+      return 1;
+    } else if (a.end < b.end) {
+      return -1;
+    } else if (a.end > b.end) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
 }
